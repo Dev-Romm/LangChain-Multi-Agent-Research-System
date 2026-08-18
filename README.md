@@ -1,112 +1,138 @@
 # Research Agent
 
-An AI-powered research agent built with LangChain that leverages web search and content scraping capabilities to gather and process information from the internet.
+Research Agent is a LangChain-powered system that turns a research question into a sourced report and an independent critique. It combines live web search, web-page extraction, report writing, and quality review in a Streamlit workspace.
 
-## Features
+## What It Does
 
-- **Web Search**: Search the web using Tavily Search API for recent and reliable information
-- **URL Scraping**: Extract and clean main content from web pages using multiple extraction methods (trafilatura, readability, BeautifulSoup)
-- **LangChain Integration**: Built on top of LangChain framework for extensible AI agent capabilities
-- **Error Handling**: Robust error handling for network and parsing failures
+The system runs a four-stage pipeline:
+
+1. **Search**: Uses Tavily to find recent and relevant web sources.
+2. **Read**: Selects a relevant URL and extracts its main content.
+3. **Write**: Combines the search notes and scraped content into a structured report.
+4. **Critique**: Reviews the report and returns a score, strengths, areas to improve, and a verdict.
+
+The Streamlit interface provides:
+
+- A dark research workspace for submitting questions
+- Preset research prompts
+- Live pipeline status and a detailed session trace
+- Report, source, and scraped-content views
+- A visible critic report
+- Markdown report download
 
 ## Project Structure
 
-```
+```text
 Research Agent/
-├── app.py                  # Streamlit application (WIP)
-├── main.py                 # Entry point for testing tools
+├── app.py                  # Streamlit user interface
+├── main.py                 # Command-line pipeline entry point
 ├── requirements.txt        # Python dependencies
-├── .gitignore             # Git ignore patterns
-├── .env.example           # Environment variables template
 └── src/
-    ├── __init__.py
     ├── agents/
-    │   ├── __init__.py
-    │   └── agents.py       # Agent definitions (WIP)
+    │   └── agents.py       # Search, reader, writer, and critic definitions
     ├── pipelines/
-    │   ├── __init__.py
-    │   └── pipeline.py     # Pipeline orchestration (WIP)
+    │   └── pipeline.py     # Four-stage research orchestration
     └── tools/
-        ├── __init__.py
-        └── tools.py        # Tool implementations (web_search, scrape_url)
+        └── tools.py        # Tavily search and web scraping tools
 ```
+
+## Requirements
+
+- Python 3.10 or newer
+- A Tavily API key
+- An Azure OpenAI deployment configured for `AzureChatOpenAI`
 
 ## Installation
 
-1. Clone the repository:
+Create and activate a virtual environment, then install the dependencies:
+
 ```bash
-git clone <repository-url>
-cd "Research Agent"
+python -m venv .venv
 ```
 
-2. Create and activate a virtual environment (recommended):
-```bash
-python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
+On Windows PowerShell:
+
+```powershell
+.venv\Scripts\Activate.ps1
 ```
 
-3. Install dependencies:
+On macOS or Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+Install the project packages:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Set up environment variables:
-```bash
-# Create a .env file with:
-TAVILY_API_KEY=your_tavily_api_key_here
+## Configuration
+
+Create a `.env` file in the project root. The application loads environment variables with `python-dotenv`.
+
+```env
+TAVILY_API_KEY=your_tavily_api_key
+AZURE_OPENAI_API_KEY=your_azure_openai_api_key
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 ```
 
-## Usage
+The Azure deployment name is configured in `src/agents/agents.py` as `gpt-41-mini`. Change it there if your Azure OpenAI deployment uses a different name.
 
-### Basic Tool Testing
+Get a Tavily API key from [tavily.com](https://tavily.com). Azure OpenAI credentials and deployment access are provided through your Azure account.
 
-Run the example in `main.py`:
+## Run the Streamlit Application
+
+Start the research workspace with:
+
+```bash
+streamlit run app.py
+```
+
+Open the local URL shown by Streamlit, normally `http://localhost:8501`. Enter a question, choose **Begin research**, and wait for the four pipeline stages to complete.
+
+## Run from the Command Line
+
+`main.py` runs the pipeline with the example topic defined in that file:
+
 ```bash
 python main.py
 ```
 
-This will scrape content from a URL and print the extracted text.
+The command prints search results, scraped content, the generated report, and the critic report to the terminal.
 
-### Using Tools Programmatically
+## Use the Tools Directly
+
+The tools are LangChain tools and can be invoked programmatically:
 
 ```python
-from src.tools.tools import web_search, scrape_url
+from src.tools.tools import scrape_url, web_search
 
-# Search the web
-results = web_search.invoke({"query": "your search query"})
-print(results)
+search_results = web_search.invoke({"query": "your research question"})
+print(search_results)
 
-# Scrape a URL
-content = scrape_url.invoke({"url": "https://example.com"})
-print(content)
+page_content = scrape_url.invoke({"url": "https://example.com"})
+print(page_content)
+```
+
+## Validation
+
+Compile the Streamlit entry point to check for Python syntax errors:
+
+```bash
+python -m py_compile app.py
 ```
 
 ## Dependencies
 
-- **langchain** (0.2.0+) - AI framework for building with LLMs
-- **tavily-python** (0.3.0+) - Web search API
-- **beautifulsoup4** (4.12.0+) - HTML parsing
-- **readability-lxml** - Content extraction
-- **trafilatura** - Main content extraction
-- **requests** (2.31.0+) - HTTP library
-- **python-dotenv** (1.0.0+) - Environment variable management
-- **rich** (13.7.0+) - Pretty terminal output
-
-## API Keys Required
-
-- **Tavily API Key**: Get one at [https://tavily.com](https://tavily.com)
-
-## Roadmap
-
-- [ ] Complete agent implementations in `src/agents/agents.py`
-- [ ] Implement pipeline orchestration in `src/pipelines/pipeline.py`
-- [ ] Build Streamlit UI in `app.py`
-- [ ] Add additional tools (PDF scraping, data processing, etc.)
-- [ ] Add unit tests
-- [ ] Add logging and monitoring
+- `langchain` and `langchain-core` for agent and chain orchestration
+- `langchain-openai` for Azure OpenAI integration
+- `streamlit` for the research interface
+- `tavily-python` for web search
+- `trafilatura`, `readability-lxml`, and `beautifulsoup4` for content extraction
+- `requests` and `lxml` for HTTP and HTML handling
+- `python-dotenv` for local configuration
 
 ## License
 
@@ -114,4 +140,4 @@ MIT
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit pull requests or open issues.
+Contributions are welcome. Please open an issue to discuss a change before submitting a pull request.

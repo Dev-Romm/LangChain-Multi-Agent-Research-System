@@ -1,4 +1,4 @@
-from src.tools.tools import web_search, scrape_url
+from src.pipelines.pipeline import run_research_pipeline
 
-output = scrape_url.invoke({"url": "https://www.caranddriver.com/features/g28985154/future-cars/"})
-print(output)
+topic = "The impact of AI on the web development market in 2026"
+run_research_pipeline(topic)
